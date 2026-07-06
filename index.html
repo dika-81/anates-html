@@ -530,7 +530,8 @@ function analyze(P){
     // DP
     let su=0,sl=0; for(const s of upperIdx) su+=col[s]; for(const s of lowerIdx) sl+=col[s];
     const meanU=su/ng, meanL=sl/ng;
-    const dp=(meanU-meanL)/maxScore[j];
+    const r2=x=>Math.round(x*100)/100;
+    const dp=(r2(meanU)-r2(meanL))/maxScore[j];
     // correlations
     const r = pearson(col,total);
     const totMinus = total.map((t,s)=>t-col[s]);

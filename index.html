@@ -745,7 +745,7 @@ function renderDP(R){
   let h='<table><thead><tr><th>Butir</th><th class="n">Rerata Atas</th><th class="n">Rerata Bawah</th><th class="n">DP</th><th class="n">%</th><th>Tafsiran</th></tr></thead><tbody>';
   R.items.forEach(it=>{
     const c=dpCat(it.dp);
-    h+='<tr><td class="num">'+(it.j+1)+'</td><td class="n">'+D(it.meanU,2)+'</td><td class="n">'+D(it.meanL,2)+'</td><td class="n">'+D(it.dp,3)+'</td><td class="n">'+PCT(it.dp,1)+'</td><td>'+pill(c.t,c.c)+'</td></tr>';
+    h+='<tr><td class="num">'+(it.j+1)+'</td><td class="n">'+D(it.meanU,2)+'</td><td class="n">'+D(it.meanL,2)+'</td><td class="n">'+D(it.dp,2)+'</td><td class="n">'+PCT(it.dp,1)+'</td><td>'+pill(c.t,c.c)+'</td></tr>';
   });
   h+='</tbody></table>';
   $("dpBox").innerHTML=h;

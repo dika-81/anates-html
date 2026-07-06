@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisis Butir Soal — CTT (PG &amp; Uraian)</title>
+<style>
+  :root{
+    --paper:#f7f8fa;
+    --card:#ffffff;
+    --ink:#171c24;
+    --muted:#5c6672;
+    --faint:#8b95a1;
+    --line:#e3e7ec;
+    --line2:#eef1f5;
+    --accent:#2457d9;
+    --accent-d:#1c46b0;
+    --accent-soft:#eaf0ff;
+    --good:#137a45;
+    --good-soft:#e6f4ec;
+    --warn:#a9640a;
+    --warn-soft:#fbf0dd;
+    --bad:#bd3b2c;
+    --bad-soft:#fbe9e6;
+    --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Consolas,Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(20,30,45,.04),0 1px 3px rgba(20,30,45,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:15px;line-height:1.5;
+    font-variant-numeric:tabular-nums;
+  }
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+  /* ---------- Header ---------- */
+  header.top{
+    background:var(--ink);color:#fff;padding:22px 0 20px;
+    border-bottom:3px solid var(--accent);
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+  .brandrow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .mark{
+    font-weight:750;letter-spacing:-.02em;font-size:24px;line-height:1;
+  }
+  .mark span{color:#9db4ff}
+  .tag{font-size:12.5px;color:#aeb8c6;letter-spacing:.02em}
+  .sub{margin-top:8px;color:#c4ccd8;font-size:13.5px;max-width:760px}
+  .sub b{color:#e7ebf2;font-weight:600}
+
+  /* ---------- Layout ---------- */
+  .shell{max-width:1180px;margin:26px auto 60px;padding:0 22px;display:grid;grid-template-columns:210px 1fr;gap:28px}
+  nav.rail{position:sticky;top:18px;align-self:start;font-size:13.5px}
+  nav.rail .rlabel{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--faint);margin:0 0 10px 2px;font-weight:700}
+  nav.rail a{
+    display:flex;gap:9px;align-items:center;color:var(--muted);text-decoration:none;
+    padding:7px 10px;border-radius:8px;margin-bottom:2px;transition:.12s;
+  }
+  nav.rail a .idx{font-family:var(--mono);font-size:11px;color:var(--faint);min-width:15px}
+  nav.rail a:hover{background:#eef1f6;color:var(--ink)}
+  nav.rail a.active{background:var(--accent-soft);color:var(--accent-d);font-weight:600}
+  nav.rail a.active .idx{color:var(--accent)}
+
+  main{min-width:0}
+
+  /* ---------- Cards / sections ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:22px;overflow:hidden}
+  .card > .hd{padding:16px 20px 14px;border-bottom:1px solid var(--line2);display:flex;align-items:flex-start;gap:12px}
+  .card > .hd .eyebrow{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.06em;padding-top:3px}
+  .card > .hd h2{margin:0;font-size:17px;letter-spacing:-.01em}
+  .card > .hd .desc{margin:3px 0 0;color:var(--muted);font-size:12.5px;font-weight:400}
+  .card > .bd{padding:18px 20px 20px}
+
+  /* ---------- Input area ---------- */
+  .cfgrow{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field > label{font-size:12px;font-weight:600;color:var(--muted)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+  .seg button{border:0;background:#fff;padding:8px 15px;font:inherit;font-size:13.5px;cursor:pointer;color:var(--muted);font-weight:600}
+  .seg button.on{background:var(--accent);color:#fff}
+  .seg button+button{border-left:1px solid var(--line)}
+  select,input[type=number]{font:inherit;font-size:13.5px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+  .chk{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+  .chk input{width:16px;height:16px;accent-color:var(--accent)}
+
+  .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.9fr);gap:16px}
+  .ta-wrap label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px}
+  .ta-wrap .hint{font-weight:400;color:var(--faint);font-size:11.5px}
+  textarea{
+    width:100%;font-family:var(--mono);font-size:12.5px;line-height:1.55;
+    border:1px solid var(--line);border-radius:9px;padding:11px 12px;resize:vertical;background:#fcfdfe;color:var(--ink);
+    tab-size:6;
+  }
+  textarea:focus,select:focus,input:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+  #keyIn{min-height:70px}
+  #dataIn{min-height:210px}
+
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  .btn{border:0;border-radius:9px;padding:10px 18px;font:inherit;font-size:14px;font-weight:650;cursor:pointer;transition:.12s}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-d)}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--muted)}
+  .btn.ghost:hover{border-color:var(--faint);color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .demoset{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .demoset .lbl{font-size:12px;color:var(--faint)}
+  .linkbtn{background:none;border:0;color:var(--accent);font:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:2px}
+
+  .banner{border-radius:9px;padding:11px 14px;font-size:13px;margin-top:14px;display:none;line-height:1.5}
+  .banner.err{background:var(--bad-soft);color:#7d271b;border:1px solid #f0c9c2;display:block}
+  .banner.err b{color:#5f1d13}
+
+  /* ---------- Stats overview ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line2);border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+  .stat{background:#fff;padding:14px 15px}
+  .stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);font-weight:600}
+  .stat .v{font-family:var(--mono);font-size:22px;font-weight:600;margin-top:3px;letter-spacing:-.01em}
+  .stat .u{font-size:12px;color:var(--muted);font-weight:400}
+
+  /* ---------- Tables ---------- */
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line2);border-radius:9px}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--line2);white-space:nowrap}
+  thead th{background:#f4f6f9;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;font-weight:700;position:sticky;top:0}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:#f9fbfd}
+  td.n,th.n{text-align:right;font-family:var(--mono)}
+  td.c,th.c{text-align:center}
+  .tfoot td{background:#f8fafc;font-weight:600;border-top:2px solid var(--line)}
+
+  .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:650;line-height:1.5;white-space:nowrap}
+  .p-good{background:var(--good-soft);color:var(--good)}
+  .p-warn{background:var(--warn-soft);color:var(--warn)}
+  .p-bad{background:var(--bad-soft);color:var(--bad)}
+  .p-mut{background:#eef1f5;color:var(--muted)}
+  .sig{font-family:var(--mono);font-weight:700}
+  .sig.s2{color:var(--good)} .sig.s1{color:var(--accent)} .sig.s0{color:var(--faint)}
+
+  .relgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .relbox{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:#fdfdfe}
+  .relbox .rt{font-size:12px;color:var(--muted);font-weight:600}
+  .relbox .rv{font-family:var(--mono);font-size:28px;font-weight:650;margin:4px 0 2px;letter-spacing:-.02em}
+  .relbox .rd{font-size:12px;color:var(--faint)}
+  .relbox .formula{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+
+  /* ---------- Distractor ---------- */
+  .opt-good{background:var(--good-soft)}
+  .opt-bad{background:var(--bad-soft)}
+  .opt-key{outline:2px solid var(--accent);outline-offset:-2px;font-weight:700;color:var(--accent-d)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:12px}
+  .legend .li{display:flex;align-items:center;gap:6px}
+  .swatch{width:13px;height:13px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.06)}
+
+  details.notes{margin-top:6px}
+  details.notes summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--accent-d);padding:6px 0}
+  details.notes[open] summary{margin-bottom:8px}
+  .notes .body{font-size:13px;color:#39424e;line-height:1.65}
+  .notes .body ul{margin:8px 0 8px 4px;padding-left:18px}
+  .notes .body li{margin-bottom:6px}
+  .notes .body code{background:#f0f2f6;padding:1px 5px;border-radius:4px;font-family:var(--mono);font-size:12px}
+  .notes .body h4{margin:14px 0 4px;font-size:13px}
+
+  .empty{color:var(--faint);font-size:14px;text-align:center;padding:34px 10px}
+  #results{display:none}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+  .toolbar .grow{flex:1}
+  .foot{color:var(--faint);font-size:12px;text-align:center;margin:34px 0 6px;line-height:1.6}
+  .foot a{color:var(--muted)}
+
+  @media (max-width:860px){
+    .shell{grid-template-columns:1fr;gap:16px}
+    nav.rail{position:static;display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+    nav.rail .rlabel{display:none}
+    nav.rail a{white-space:nowrap;margin-bottom:0}
+    .grid2{grid-template-columns:1fr}
+  }
+
+  /* ---------- Print ---------- */
+  @media print{
+    body{background:#fff;font-size:11px}
+    header.top,nav.rail,.card.input-card,.toolbar,.foot,details.notes summary{display:none !important}
+    .shell{display:block;margin:0;padding:0;max-width:none}
+    .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;margin-bottom:12px}
+    .card>.hd{background:#f3f3f3}
+    #results{display:block !important}
+    details.notes[open] .body{display:block}
+    thead th{position:static}
+    a[href]:after{content:""}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brandrow">
+      <div class="mark">Analisis<span>Butir</span></div>
+      <div class="tag">Classical Test Theory · v1.0</div>
+    </div>
+    <p class="sub">Analisis kualitas butir soal <b>Pilihan Ganda</b> dan <b>Uraian</b> dengan output yang dapat diunduh dalam bentuk pdf: tingkat kesukaran, daya pembeda, korelasi butir–total, reliabilitas, analisis pengecoh, dan rekap keputusan butir. Berjalan penuh di peramban, tanpa instalasi.</p>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail">
+    <div class="rlabel">Laporan</div>
+    <a href="#sec-input" data-t="input" class="active"><span class="idx">·</span> Input Data</a>
+    <a href="#sec-ringkasan" data-t="ringkasan"><span class="idx">1</span> Ringkasan</a>
+    <a href="#sec-skor" data-t="skor"><span class="idx">2</span> Skor &amp; Peringkat</a>
+    <a href="#sec-rel" data-t="rel"><span class="idx">3</span> Reliabilitas</a>
+    <a href="#sec-tk" data-t="tk"><span class="idx">4</span> Tingkat Kesukaran</a>
+    <a href="#sec-dp" data-t="dp"><span class="idx">5</span> Daya Pembeda</a>
+    <a href="#sec-kor" data-t="kor"><span class="idx">6</span> Korelasi Butir</a>
+    <a href="#sec-peng" data-t="peng" id="nav-peng"><span class="idx">7</span> Kualitas Pengecoh</a>
+    <a href="#sec-rekap" data-t="rekap"><span class="idx">8</span> Rekap Butir</a>
+  </nav>
+
+  <main>
+    <!-- INPUT -->
+    <section class="card input-card" id="sec-input">
+      <div class="hd">
+        <span class="eyebrow">·</span>
+        <div><h2>Input Data</h2><p class="desc">Tempel data dari Excel/Spreadsheet (Tab), atau CSV. Pemisah kolom terdeteksi otomatis.</p></div>
+      </div>
+      <div class="bd">
+        <div class="cfgrow">
+          <div class="field">
+            <label>Jenis Soal</label>
+            <div class="seg" id="modeSeg">
+              <button data-mode="pg" class="on">Pilihan Ganda</button>
+              <button data-mode="essay">Uraian / Essay</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Kelompok Daya Pembeda</label>
+            <select id="dpGroup">
+              <option value="27">Atas–Bawah 27% (default)</option>
+              <option value="50">Atas–Bawah 50% (median split)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Opsi Baca</label>
+            <label class="chk"><input type="checkbox" id="hasName" checked> Kolom pertama = Nama/ID peserta</label>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="ta-wrap">
+            <label id="keyLabel">Kunci Jawaban <span class="hint">— huruf per butir, mis. <code>B C A D ...</code></span></label>
+            <textarea id="keyIn" spellcheck="false" placeholder="B C A D C ..."></textarea>
+          </div>
+          <div class="ta-wrap">
+            <label id="dataLabel">Data Jawaban Peserta <span class="hint">— satu baris per peserta</span></label>
+            <textarea id="dataIn" spellcheck="false" placeholder="Andi&#9;B&#9;C&#9;A&#9;D&#9;C ..."></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="runBtn">Analisis</button>
+          <button class="btn ghost" id="clearBtn">Kosongkan</button>
+          <div class="demoset">
+            <span class="lbl">Contoh data:</span>
+            <button class="linkbtn" id="demoPG">Pilihan Ganda</button>
+            <button class="linkbtn" id="demoEssay">Uraian</button>
+          </div>
+        </div>
+        <div class="banner err" id="errBox"></div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <div id="results">
+      <div class="toolbar">
+        <div class="grow"></div>
+        <button class="btn ghost" id="copyBtn">Salin tabel rekap (TSV)</button>
+        <button class="btn ghost" id="csvBtn">Unduh CSV</button>
+        <button class="btn ghost" id="printBtn">Cetak / PDF</button>
+      </div>
+
+      <section class="card" id="sec-ringkasan">
+        <div class="hd"><span class="eyebrow">01</span><div><h2>Ringkasan</h2><p class="desc" id="ringDesc"></p></div></div>
+        <div class="bd"><div class="stats" id="statBox"></div></div>
+      </section>
+
+      <section class="card" id="sec-skor">
+        <div class="hd"><span class="eyebrow">02</span><div><h2>Skor &amp; Peringkat</h2><p class="desc">Skor total tiap peserta beserta peringkat dan persentase terhadap skor ideal.</p></div></div>
+        <div class="bd"><div class="tbl-scroll" id="skorBox"></div></div>
+      </section>
+
+      <section class="card" id="sec-rel">
+        <div class="hd"><span class="eyebrow">03</span><div><h2>Reliabilitas</h2><p class="desc">Konsistensi internal tes. Ditampilkan dua metode agar dapat dibandingkan.</p></div></div>
+        <div class="bd"><div class="relgrid" id="relBox"></div>
+          <details class="notes"><summary>Metode &amp; interpretasi reliabilitas</summary><div class="body" id="relNotes"></div></details>
+        </div>
+      </section>
+
+      <section class="card" id="sec-tk">
+        <div class="hd"><span class="eyebrow">04</span><div><h2>Tingkat Kesukaran (TK)</h2><p class="desc">Proporsi skor tercapai terhadap skor maksimum butir. Semakin besar = semakin mudah.</p></div></div>
+        <div class="bd"><div class="tbl-scroll" id="tkBox"></div></div>
+      </section>
+
+      <section class="card" id="sec-dp">
+        <div class="hd"><span class="eyebrow">05</span><div><h2>Daya Pembeda (DP)</h2><p class="desc" id="dpDesc"></p></div></div>
+        <div class="bd"><div class="tbl-scroll" id="dpBox"></div></div>
+      </section>
+
+      <section class="card" id="sec-kor">
+        <div class="hd"><span class="eyebrow">06</span><div><h2>Korelasi Butir–Total</h2><p class="desc">Korelasi skor butir dengan skor total (validitas butir) beserta signifikansinya.</p></div></div>
+        <div class="bd"><div class="tbl-scroll" id="korBox"></div>
+          <div class="legend">
+            <span class="li"><span class="sig s2">**</span> Sangat signifikan (p&lt;0,01)</span>
+            <span class="li"><span class="sig s1">*</span> Signifikan (p&lt;0,05)</span>
+            <span class="li"><span class="sig s0">–</span> Tidak signifikan</span>
+          </div>
+          <details class="notes"><summary>Tentang kolom korelasi terkoreksi</summary><div class="body" id="korNotes"></div></details>
+        </div>
+      </section>
+
+      <section class="card" id="sec-peng">
+        <div class="hd"><span class="eyebrow">07</span><div><h2>Kualitas Pengecoh</h2><p class="desc">Sebaran pilihan jawaban per butir. Pengecoh baik bila dipilih peserta dan lebih banyak oleh kelompok bawah.</p></div></div>
+        <div class="bd"><div class="tbl-scroll" id="pengBox"></div>
+          <div class="legend">
+            <span class="li"><span class="swatch opt-key"></span> Kunci</span>
+            <span class="li"><span class="swatch opt-good"></span> Pengecoh berfungsi</span>
+            <span class="li"><span class="swatch opt-bad"></span> Pengecoh lemah</span>
+          </div>
+          <details class="notes"><summary>Kriteria keberfungsian pengecoh</summary><div class="body" id="pengNotes"></div></details>
+        </div>
+      </section>
+
+      <section class="card" id="sec-rekap">
+        <div class="hd"><span class="eyebrow">08</span><div><h2>Rekap &amp; Keputusan Butir</h2><p class="desc">Gabungan TK, DP, dan korelasi menjadi satu keputusan: terima, revisi, atau tolak.</p></div></div>
+        <div class="bd"><div class="tbl-scroll" id="rekapBox"></div>
+          <details class="notes"><summary>Aturan keputusan yang dipakai</summary><div class="body" id="rekapNotes"></div></details>
+        </div>
+      </section>
+    </div>
+
+    <div class="foot">
+      Analisis Butir · Classical Test Theory · alat gratis untuk pendidik.<br>
+      Semua perhitungan berjalan lokal di peramban Anda. Tidak ada data yang dikirim ke mana pun.<br>
+      &copy 2026 Andika Arisetyawan.
+    </div>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   STATE
+============================================================ */
+let MODE = "pg"; // pg | essay
+const $ = id => document.getElementById(id);
+
+/* ============================================================
+   MATH CORE (teruji terhadap nilai acuan)
+============================================================ */
+const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
+function variance(a,sample){ const m=mean(a); let ss=0; for(const x of a) ss+=(x-m)*(x-m); const d=a.length-(sample?1:0); return d<=0?0:ss/d; }
+const sd = (a,sample)=>Math.sqrt(variance(a,sample));
+function median(a){ const b=[...a].sort((x,y)=>x-y); const n=b.length; return n%2?b[(n-1)/2]:(b[n/2-1]+b[n/2])/2; }
+function pearson(x,y){
+  const n=x.length, mx=mean(x), my=mean(y);
+  let sxy=0,sxx=0,syy=0;
+  for(let i=0;i<n;i++){ const dx=x[i]-mx, dy=y[i]-my; sxy+=dx*dy; sxx+=dx*dx; syy+=dy*dy; }
+  if(sxx===0||syy===0) return NaN;
+  return sxy/Math.sqrt(sxx*syy);
+}
+/* Alfa Cronbach (= KR-20 untuk data dikotomi). Pembagi n saling hilang di rasio. */
+function cronbachAlpha(items){
+  const k=items.length, n=items[0].length;
+  const tot=new Array(n).fill(0);
+  for(let j=0;j<k;j++) for(let s=0;s<n;s++) tot[s]+=items[j][s];
+  const vt=variance(tot,false);
+  if(vt===0) return NaN;
+  let sv=0; for(let j=0;j<k;j++) sv+=variance(items[j],false);
+  return (k/(k-1))*(1-sv/vt);
+}
+function splitHalfSB(items){ /* belah ganjil-genap */
+  const k=items.length, n=items[0].length;
+  const odd=new Array(n).fill(0), even=new Array(n).fill(0);
+  for(let j=0;j<k;j++){ const arr=(j%2===0)?odd:even; for(let s=0;s<n;s++) arr[s]+=items[j][s]; }
+  const rh=pearson(odd,even);
+  const r11=(2*rh)/(1+rh);
+  return {rh,r11};
+}
+/* p-value dua sisi distribusi t via regularized incomplete beta */
+function betacf(x,a,b){
+  const FPMIN=1e-300,MAXIT=200,EPS=3e-12;
+  const qab=a+b,qap=a+1,qam=a-1;
+  let c=1,d=1-qab*x/qap; if(Math.abs(d)<FPMIN)d=FPMIN; d=1/d; let h=d;
+  for(let m=1;m<=MAXIT;m++){
+    const m2=2*m;
+    let aa=m*(b-m)*x/((qam+m2)*(a+m2));
+    d=1+aa*d; if(Math.abs(d)<FPMIN)d=FPMIN; c=1+aa/c; if(Math.abs(c)<FPMIN)c=FPMIN; d=1/d; h*=d*c;
+    aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));
+    d=1+aa*d; if(Math.abs(d)<FPMIN)d=FPMIN; c=1+aa/c; if(Math.abs(c)<FPMIN)c=FPMIN; d=1/d; const del=d*c; h*=del;
+    if(Math.abs(del-1)<EPS)break;
+  }
+  return h;
+}
+function gammaln(x){
+  const g=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];
+  let y=x,tmp=x+5.5; tmp-=(x+0.5)*Math.log(tmp); let ser=1.000000000190015;
+  for(let j=0;j<6;j++){ y++; ser+=g[j]/y; }
+  return -tmp+Math.log(2.5066282746310005*ser/x);
+}
+function betai(a,b,x){
+  if(x<=0)return 0; if(x>=1)return 1;
+  const bt=Math.exp(gammaln(a+b)-gammaln(a)-gammaln(b)+a*Math.log(x)+b*Math.log(1-x));
+  return x<(a+1)/(a+b+2) ? bt*betacf(x,a,b)/a : 1-bt*betacf(1-x,b,a)/b;
+}
+function corrSig(r,n){
+  if(!isFinite(r)||n<3) return {t:NaN,p:NaN};
+  const df=n-2, t=r*Math.sqrt(df/(1-r*r)), p=betai(df/2,0.5,df/(df+t*t));
+  return {t,p};
+}
+
+/* ============================================================
+   PARSER
+============================================================ */
+function detectDelim(text){
+  const t=(text.match(/\t/g)||[]).length;
+  const sc=(text.match(/;/g)||[]).length;
+  const cm=(text.match(/,/g)||[]).length;
+  if(t>=sc && t>=cm && t>0) return "\t";
+  if(sc>=cm && sc>0) return ";";
+  if(cm>0) return ",";
+  return /\s+/; // whitespace
+}
+function splitLine(line,delim){
+  const parts = (delim instanceof RegExp) ? line.trim().split(delim) : line.split(delim);
+  return parts.map(s=>s.trim()).filter((s,i,arr)=> !(s===""&&i===arr.length-1)); // trim trailing empty
+}
+
+function parseInput(){
+  const keyRaw = $("keyIn").value.trim();
+  const dataRaw = $("dataIn").value.replace(/\r/g,"").trim();
+  if(!keyRaw) throw new Error("Kunci jawaban / skor maksimum masih kosong.");
+  if(!dataRaw) throw new Error("Data jawaban peserta masih kosong.");
+
+  const kDelim = detectDelim(keyRaw);
+  const keyTok = splitLine(keyRaw, kDelim).filter(s=>s!=="");
+  const K = keyTok.length;
+  if(K<2) throw new Error("Butir soal terlalu sedikit (minimal 2 butir terdeteksi pada baris kunci).");
+
+  let key, maxScore;
+  if(MODE==="pg"){
+    key = keyTok.map(s=>s.toUpperCase());
+    maxScore = new Array(K).fill(1);
+  } else {
+    maxScore = keyTok.map(s=>{
+      const v=parseFloat(s.replace(",","."));
+      if(!isFinite(v)||v<=0) throw new Error("Baris skor maksimum berisi nilai tidak valid: \""+s+"\". Untuk mode Uraian, isi skor maksimum tiap butir (angka).");
+      return v;
+    });
+    key=null;
+  }
+
+  const dDelim = detectDelim(dataRaw);
+  const lines = dataRaw.split("\n").map(l=>l).filter(l=>l.trim()!=="");
+  const hasName = $("hasName").checked;
+  const names=[], responses=[]; const rowErrors=[];
+
+  lines.forEach((line,ri)=>{
+    let toks = splitLine(line,dDelim);
+    let name;
+    if(hasName){ name = toks.shift() ?? ("S"+(ri+1)); }
+    else name = "S"+(ri+1);
+    // drop trailing empties
+    while(toks.length && toks[toks.length-1]==="") toks.pop();
+    if(toks.length!==K){
+      rowErrors.push("Baris "+(ri+1)+" (\""+name+"\") memiliki "+toks.length+" jawaban, seharusnya "+K+".");
+      return;
+    }
+    names.push(name||("S"+(ri+1)));
+    responses.push(toks);
+  });
+
+  if(rowErrors.length){
+    throw new Error("Jumlah kolom jawaban tidak konsisten dengan jumlah butir ("+K+"):|"+rowErrors.slice(0,6).join("|")+(rowErrors.length>6?"|…dan "+(rowErrors.length-6)+" baris lain.":""));
+  }
+  if(responses.length<3) throw new Error("Peserta terlalu sedikit (terbaca "+responses.length+"). Minimal 3 peserta untuk analisis yang bermakna.");
+
+  return {K, key, maxScore, names, responses, N:responses.length};
+}
+
+/* ============================================================
+   ANALYSIS
+============================================================ */
+function analyze(P){
+  const {K,key,maxScore,names,responses,N}=P;
+  // Build score matrix [item][student] and raw responses
+  const score = Array.from({length:K},()=>new Array(N).fill(0));
+  const rawUpper = responses.map(r=>r.map(x=>x.toUpperCase()));
+
+  for(let s=0;s<N;s++){
+    for(let j=0;j<K;j++){
+      if(MODE==="pg"){
+        const ans=rawUpper[s][j];
+        score[j][s] = (ans!=="" && ans===key[j]) ? 1 : 0;
+      } else {
+        const v=parseFloat(responses[s][j].replace(",","."));
+        score[j][s] = isFinite(v)?v:0;
+      }
+    }
+  }
+  // totals
+  const total=new Array(N).fill(0);
+  for(let s=0;s<N;s++) for(let j=0;j<K;j++) total[s]+=score[j][s];
+  const idealMax = maxScore.reduce((a,b)=>a+b,0);
+
+  // ranking
+  const order = names.map((_,i)=>i).sort((a,b)=> total[b]-total[a] || a-b);
+  const rank=new Array(N); order.forEach((idx,pos)=>rank[idx]=pos+1);
+
+  // DP groups
+  const pct = parseInt($("dpGroup").value,10)/100;
+  const ng = Math.max(1, Math.round(N*pct));
+  const upperIdx = order.slice(0,ng);
+  const lowerIdx = order.slice(N-ng);
+
+  // per-item stats
+  const items=[];
+  for(let j=0;j<K;j++){
+    const col=score[j];
+    const tk = mean(col)/maxScore[j];
+    // DP
+    let su=0,sl=0; for(const s of upperIdx) su+=col[s]; for(const s of lowerIdx) sl+=col[s];
+    const meanU=su/ng, meanL=sl/ng;
+    const dp=(meanU-meanL)/maxScore[j];
+    // correlations
+    const r = pearson(col,total);
+    const totMinus = total.map((t,s)=>t-col[s]);
+    const rCorr = pearson(col,totMinus);
+    const sig = corrSig(r,N);
+    // distractor (pg)
+    let distr=null;
+    if(MODE==="pg"){
+      distr = buildDistractor(rawUpper, j, key[j], upperIdx, lowerIdx, N);
+    }
+    items.push({j,tk,dp,meanU,meanL,r,rCorr,sig,max:maxScore[j],distr,
+      pMean:mean(col), pSD:sd(col,true),
+      verdict:verdictOf(tk,dp,r,sig.p)});
+  }
+
+  // reliability
+  const alpha = cronbachAlpha(score);
+  const sh = splitHalfSB(score);
+
+  return {
+    K,N,names,total,rank,order,idealMax,ng,pct,
+    meanTotal:mean(total), sdTotal:sd(total,true),
+    minTotal:Math.min(...total), maxTotal:Math.max(...total), medTotal:median(total),
+    items, alpha, splitHalf:sh, maxScore, key
+  };
+}
+
+function buildDistractor(rawUpper, j, keyOpt, upperIdx, lowerIdx, N){
+  // collect option universe: key + any chosen option (A..) ; blanks -> "?"
+  const counts={}; const up={}, lo={};
+  const uSet=new Set(upperIdx), lSet=new Set(lowerIdx);
+  const seen=new Set([keyOpt]);
+  for(let s=0;s<N;s++){
+    let a=rawUpper[s][j];
+    if(a==="") a="?";
+    seen.add(a);
+    counts[a]=(counts[a]||0)+1;
+    if(uSet.has(s)) up[a]=(up[a]||0)+1;
+    if(lSet.has(s)) lo[a]=(lo[a]||0)+1;
+  }
+  // order options: letters sorted, blank last
+  const opts=[...seen].filter(o=>o!=="?").sort();
+  if(seen.has("?")) opts.push("?");
+  const rows = opts.map(o=>{
+    const c=counts[o]||0, u=up[o]||0, l=lo[o]||0;
+    const isKey = (o===keyOpt);
+    // functioning: chosen by >=5% of all, and lower>=upper (attracts weaker students)
+    let cls="mut", func=null;
+    if(isKey){ cls="key"; }
+    else {
+      const prop=c/N;
+      if(prop < 0.02){ cls="bad"; func=false; }             // hampir tak dipilih
+      else if(l>=u && prop>=0.02){ cls="good"; func=true; } // menarik kelompok bawah
+      else { cls="bad"; func=false; }                        // menyesatkan kelompok atas
+    }
+    return {o,c,u,l,isKey,cls,func,prop:c/N};
+  });
+  return rows;
+}
+
+/* keputusan butir */
+function verdictOf(tk,dp,r,p){
+  const reasons=[];
+  const rOk = isFinite(r) && r>0 && isFinite(p) && p<0.05;
+  const dpGood = dp>=0.30, dpFair = dp>=0.20;
+  const tkIdeal = tk>=0.30 && tk<=0.70;
+  const tkOk = tk>=0.20 && tk<=0.85;
+  const tkExtreme = tk<0.15 || tk>0.90;
+
+  if(!isFinite(r)) reasons.push("korelasi tak terdefinisi (variansi butir nol)");
+  else if(r<=0) reasons.push("korelasi butir–total ≤ 0");
+  else if(p>=0.05) reasons.push("korelasi tidak signifikan");
+  if(dp<0) reasons.push("daya pembeda negatif");
+  else if(!dpFair) reasons.push("daya pembeda lemah (<0,20)");
+  else if(!dpGood) reasons.push("daya pembeda sedang (0,20–0,30)");
+  if(!tkOk) reasons.push(tk<0.20?"butir sangat sukar":"butir sangat mudah");
+
+  let label,cls;
+  if(dp<0 || r<=0 || !isFinite(r)){
+    label="Tolak"; cls="bad";
+  } else if(dpGood && rOk && tkOk){
+    label="Terima"; cls="good";
+  } else if(!dpFair || p>=0.05 || tkExtreme){
+    label="Tolak"; cls="bad";
+  } else {
+    label="Revisi"; cls="warn";
+  }
+  return {label,cls,reasons};
+}
+
+/* ============================================================
+   FORMAT HELPERS
+============================================================ */
+const D=(x,d=2)=> (isFinite(x)? x.toFixed(d) : "–");
+const PCT=(x,d=1)=> (isFinite(x)? (x*100).toFixed(d)+"%" : "–");
+function tkCat(tk){
+  if(!isFinite(tk)) return {t:"–",c:"mut"};
+  if(tk<0.16) return {t:"Sangat Sukar",c:"bad"};
+  if(tk<0.31) return {t:"Sukar",c:"warn"};
+  if(tk<0.71) return {t:"Sedang",c:"good"};
+  if(tk<0.86) return {t:"Mudah",c:"warn"};
+  return {t:"Sangat Mudah",c:"bad"};
+}
+function dpCat(dp){
+  if(!isFinite(dp)) return {t:"–",c:"mut"};
+  if(dp<0) return {t:"Sangat Jelek",c:"bad"};
+  if(dp<0.21) return {t:"Jelek",c:"bad"};
+  if(dp<0.41) return {t:"Cukup",c:"warn"};
+  if(dp<0.71) return {t:"Baik",c:"good"};
+  return {t:"Baik Sekali",c:"good"};
+}
+function sigCell(p){
+  if(!isFinite(p)) return '<span class="sig s0">–</span>';
+  if(p<0.01) return '<span class="sig s2">**</span>';
+  if(p<0.05) return '<span class="sig s1">*</span>';
+  return '<span class="sig s0">–</span>';
+}
+const pill=(t,c)=>'<span class="pill p-'+c+'">'+t+'</span>';
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+/* ============================================================
+   RENDER
+============================================================ */
+let RES=null;
+
+function render(R){
+  RES=R;
+  // toggle pengecoh section
+  const showPeng = (MODE==="pg");
+  $("sec-peng").style.display = showPeng?"":"none";
+  $("nav-peng").style.display = showPeng?"":"none";
+
+  // 01 ringkasan
+  $("ringDesc").textContent = (MODE==="pg"?"Tes pilihan ganda":"Tes uraian")+" · "+R.N+" peserta · "+R.K+" butir · skor ideal "+D(R.idealMax,0);
+  $("statBox").innerHTML = [
+    stat("Peserta", R.N, ""),
+    stat("Butir Soal", R.K, ""),
+    stat("Rata-rata", D(R.meanTotal,2), "/ "+D(R.idealMax,0)),
+    stat("Simpang Baku", D(R.sdTotal,2), ""),
+    stat("Skor Min", D(R.minTotal,0), ""),
+    stat("Skor Maks", D(R.maxTotal,0), ""),
+    stat("Median", D(R.medTotal,1), ""),
+    stat("Rata-rata %", PCT(R.meanTotal/R.idealMax,1), "")
+  ].join("");
+
+  // 02 skor
+  renderSkor(R);
+  // 03 reliabilitas
+  renderRel(R);
+  // 04 TK
+  renderTK(R);
+  // 05 DP
+  $("dpDesc").textContent = "Selisih rata-rata kelompok atas dan bawah ("+ (R.pct*100)+"% teratas & terbawah = "+R.ng+" peserta/kelompok), dibagi skor maksimum butir.";
+  renderDP(R);
+  // 06 korelasi
+  renderKor(R);
+  // 07 pengecoh
+  if(showPeng) renderPeng(R);
+  // 08 rekap
+  renderRekap(R);
+
+  // notes
+  fillNotes(R);
+
+  $("results").style.display="block";
+  $("results").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function stat(k,v,u){ return '<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+' <span class="u">'+u+'</span></div></div>'; }
+
+function renderSkor(R){
+  let h='<table><thead><tr><th>No</th><th>Peserta</th><th class="n">Skor</th><th class="n">%</th><th class="c">Peringkat</th></tr></thead><tbody>';
+  R.order.forEach((idx,pos)=>{
+    h+='<tr><td class="n">'+(pos+1)+'</td><td>'+esc(R.names[idx])+'</td><td class="n">'+D(R.total[idx],1)+'</td><td class="n">'+PCT(R.total[idx]/R.idealMax,0)+'</td><td class="c num">'+R.rank[idx]+'</td></tr>';
+  });
+  h+='</tbody><tfoot class="tfoot"><tr><td></td><td>Rata-rata</td><td class="n">'+D(R.meanTotal,2)+'</td><td class="n">'+PCT(R.meanTotal/R.idealMax,1)+'</td><td></td></tr></tfoot></table>';
+  $("skorBox").innerHTML=h;
+}
+
+function relLabel(v){
+  if(!isFinite(v)) return {t:"–",c:"mut"};
+  if(v>=0.90) return {t:"Sangat Tinggi",c:"good"};
+  if(v>=0.80) return {t:"Tinggi",c:"good"};
+  if(v>=0.70) return {t:"Cukup",c:"warn"};
+  if(v>=0.60) return {t:"Rendah",c:"warn"};
+  return {t:"Sangat Rendah",c:"bad"};
+}
+function renderRel(R){
+  const a=R.alpha, sh=R.splitHalf;
+  const la=relLabel(a), lr=relLabel(sh.r11);
+  const alphaTitle = (MODE==="pg")?"Alfa Cronbach / KR-20":"Alfa Cronbach";
+  $("relBox").innerHTML =
+    relBox(alphaTitle, D(a,3), pill(la.t,la.c), "Konsistensi internal seluruh butir", "α = (k/k−1)·(1 − ΣSᵢ²/Sₜ²)")+
+    relBox("Reliabilitas Belah Dua", D(sh.r11,3), pill(lr.t,lr.c), "Belah ganjil–genap, koreksi Spearman-Brown", "r₁₁ = 2rₓᵧ/(1+rₓᵧ)")+
+    relBox("Korelasi Antar-Belahan", D(sh.rh,3), '<span style="font-size:12px;color:var(--faint)">rₓᵧ ganjil vs genap</span>', "Sebelum dikoreksi Spearman-Brown", "");
+}
+function relBox(t,v,tag,d,f){
+  return '<div class="relbox"><div class="rt">'+t+'</div><div class="rv">'+v+'</div><div>'+tag+'</div><div class="rd" style="margin-top:6px">'+d+'</div>'+(f?'<div class="formula">'+f+'</div>':'')+'</div>';
+}
+
+function renderTK(R){
+  let h='<table><thead><tr><th>Butir</th><th class="n">Rata-rata</th><th class="n">Skor Maks</th><th class="n">TK</th><th class="n">%</th><th>Tafsiran</th></tr></thead><tbody>';
+  R.items.forEach(it=>{
+    const c=tkCat(it.tk);
+    h+='<tr><td class="num">'+(it.j+1)+'</td><td class="n">'+D(it.pMean,2)+'</td><td class="n">'+D(it.max,0)+'</td><td class="n">'+D(it.tk,3)+'</td><td class="n">'+PCT(it.tk,1)+'</td><td>'+pill(c.t,c.c)+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  $("tkBox").innerHTML=h;
+}
+
+function renderDP(R){
+  let h='<table><thead><tr><th>Butir</th><th class="n">Rerata Atas</th><th class="n">Rerata Bawah</th><th class="n">DP</th><th class="n">%</th><th>Tafsiran</th></tr></thead><tbody>';
+  R.items.forEach(it=>{
+    const c=dpCat(it.dp);
+    h+='<tr><td class="num">'+(it.j+1)+'</td><td class="n">'+D(it.meanU,2)+'</td><td class="n">'+D(it.meanL,2)+'</td><td class="n">'+D(it.dp,3)+'</td><td class="n">'+PCT(it.dp,1)+'</td><td>'+pill(c.t,c.c)+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  $("dpBox").innerHTML=h;
+}
+
+function renderKor(R){
+  let h='<table><thead><tr><th>Butir</th><th class="n">r (butir–total)</th><th class="c">Sig.</th><th class="n">r terkoreksi</th><th>Keterangan</th></tr></thead><tbody>';
+  R.items.forEach(it=>{
+    let ket,c;
+    if(!isFinite(it.sig.p)){ ket="–"; c="mut"; }
+    else if(it.sig.p<0.01){ ket="Sangat Signifikan"; c="good"; }
+    else if(it.sig.p<0.05){ ket="Signifikan"; c="good"; }
+    else { ket="Tidak Signifikan"; c="bad"; }
+    h+='<tr><td class="num">'+(it.j+1)+'</td><td class="n">'+D(it.r,3)+'</td><td class="c">'+sigCell(it.sig.p)+'</td><td class="n">'+D(it.rCorr,3)+'</td><td>'+pill(ket,c)+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  $("korBox").innerHTML=h;
+}
+
+function renderPeng(R){
+  // collect all option letters used across items for column headers
+  const letters=new Set();
+  R.items.forEach(it=> it.distr.forEach(r=>{ if(r.o!=="?") letters.add(r.o); }));
+  const cols=[...letters].sort();
+  const hasBlank = R.items.some(it=> it.distr.some(r=>r.o==="?"));
+  let h='<table><thead><tr><th>Butir</th><th class="c">Kunci</th>';
+  cols.forEach(o=> h+='<th class="c">'+o+'</th>');
+  if(hasBlank) h+='<th class="c">Kosong</th>';
+  h+='</tr></thead><tbody>';
+  R.items.forEach(it=>{
+    const map={}; it.distr.forEach(r=>map[r.o]=r);
+    h+='<tr><td class="num">'+(it.j+1)+'</td><td class="c" style="font-weight:700;color:var(--accent-d)">'+esc(R.key[it.j])+'</td>';
+    cols.forEach(o=>{
+      const r=map[o];
+      if(!r){ h+='<td class="c num" style="color:var(--faint)">0</td>'; return; }
+      h+='<td class="c num opt-'+r.cls+'" title="Atas '+r.u+' / Bawah '+r.l+'">'+r.c+'</td>';
+    });
+    if(hasBlank){
+      const r=map["?"];
+      h+='<td class="c num'+(r?" opt-"+r.cls:"")+'">'+(r?r.c:0)+'</td>';
+    }
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  $("pengBox").innerHTML=h;
+}
+
+function renderRekap(R){
+  const showR = true;
+  let h='<table><thead><tr><th>Butir</th><th class="n">TK</th><th>Kesukaran</th><th class="n">DP</th><th>Daya Pembeda</th><th class="n">r</th><th class="c">Sig.</th>'+(MODE==="pg"?'<th class="c">Pengecoh</th>':'')+'<th>Keputusan</th><th>Catatan</th></tr></thead><tbody>';
+  let nA=0,nR=0,nT=0;
+  R.items.forEach(it=>{
+    const tc=tkCat(it.tk), dc=dpCat(it.dp), v=it.verdict;
+    if(v.cls==="good")nA++; else if(v.cls==="warn")nR++; else nT++;
+    let pengCell="";
+    if(MODE==="pg"){
+      const good=it.distr.filter(r=>!r.isKey && r.func===true).length;
+      const tot=it.distr.filter(r=>!r.isKey && r.o!=="?").length;
+      pengCell='<td class="c num">'+good+'/'+tot+'</td>';
+    }
+    h+='<tr><td class="num">'+(it.j+1)+'</td>'
+      +'<td class="n">'+D(it.tk,2)+'</td><td>'+pill(tc.t,tc.c)+'</td>'
+      +'<td class="n">'+D(it.dp,2)+'</td><td>'+pill(dc.t,dc.c)+'</td>'
+      +'<td class="n">'+D(it.r,2)+'</td><td class="c">'+sigCell(it.sig.p)+'</td>'
+      +pengCell
+      +'<td>'+pill(v.label,v.cls)+'</td>'
+      +'<td style="white-space:normal;color:var(--muted);font-size:12px">'+(v.reasons.length?esc(v.reasons.join("; ")):"memenuhi semua kriteria")+'</td></tr>';
+  });
+  h+='</tbody><tfoot class="tfoot"><tr><td colspan="'+(MODE==="pg"?9:8)+'">Ringkasan keputusan</td><td>'
+    +pill("Terima "+nA,"good")+" "+pill("Revisi "+nR,"warn")+" "+pill("Tolak "+nT,"bad")+'</td></tr></tfoot></table>';
+  $("rekapBox").innerHTML=h;
+}
+
+/* ============================================================
+   NOTES
+============================================================ */
+function fillNotes(R){
+  $("relNotes").innerHTML =
+    '<p><b>Alfa Cronbach</b> mengukur konsistensi internal dari seluruh butir sekaligus. Untuk data dikotomi (benar=1/salah=0) nilainya identik dengan <b>KR-20</b>. '
+    +'<b>Reliabilitas belah dua</b> mengorelasikan jumlah skor butir ganjil dengan butir genap, lalu dikoreksi rumus Spearman-Brown — pendekatan yang dipakai ANATES.</p>'
+    +'<p>Interpretasi umum: ≥0,90 sangat tinggi · 0,80–0,89 tinggi · 0,70–0,79 cukup · 0,60–0,69 rendah · &lt;0,60 sangat rendah. '
+    +'Nilai korelasi Pearson dan Alfa tidak terpengaruh pilihan pembagi <code>n</code> vs <code>n−1</code>, sehingga angka reliabilitas stabil.</p>';
+
+  $("korNotes").innerHTML =
+    '<p>Kolom <b>r (butir–total)</b> memakai skor total yang <i>termasuk</i> butir itu sendiri — sama seperti ANATES — dan signifikansinya diuji dengan distribusi t (df = N−2). '
+    +'Kolom <b>r terkoreksi</b> (<i>corrected item-total</i>) mengorelasikan butir dengan skor total <i>tanpa</i> butir itu, sehingga tidak ada penggelembungan artifisial. '
+    +'Untuk tes dengan butir sedikit, r terkoreksi biasanya lebih rendah dan lebih jujur; nilai inilah yang lebih tepat untuk seleksi butir.</p>';
+
+  if(MODE==="pg"){
+    $("pengNotes").innerHTML =
+      '<p>Angka pada sel = banyak peserta yang memilih opsi tersebut. Sorot warna menandai kualitas <b>pengecoh</b> (opsi selain kunci): '
+      +'<b>berfungsi</b> bila dipilih ≥2% peserta dan lebih banyak oleh kelompok bawah daripada atas (menyesatkan peserta lemah, bukan peserta kuat); '
+      +'<b>lemah</b> bila hampir tidak dipilih (&lt;2%) atau justru lebih menjebak kelompok atas. Arahkan kursor ke sel untuk melihat rincian Atas/Bawah.</p>'
+      +'<p>Kolom "Pengecoh" pada tabel rekap menampilkan rasio pengecoh berfungsi terhadap total pengecoh, mis. <code>2/3</code>.</p>';
+  }
+
+  $("rekapNotes").innerHTML =
+    '<h4>Kriteria keputusan</h4>'
+    +'<div class="body"><ul>'
+    +'<li><b>Terima</b> — daya pembeda ≥ 0,30, tingkat kesukaran 0,20–0,85, dan korelasi butir–total positif serta signifikan (p&lt;0,05).</li>'
+    +'<li><b>Revisi</b> — masih memadai (DP ≥ 0,20, korelasi signifikan) tetapi ada aspek yang perlu diperbaiki, mis. kesukaran agak ekstrem atau daya pembeda hanya sedang.</li>'
+    +'<li><b>Tolak</b> — daya pembeda &lt; 0,20 atau negatif, korelasi tidak signifikan/negatif, atau butir terlalu sukar/mudah dengan diskriminasi buruk.</li>'
+    +'</ul>'
+    +'<p style="color:var(--muted)"> </p></div>';
+}
+
+/* ============================================================
+   EXPORT
+============================================================ */
+function rekapMatrix(){
+  const R=RES; if(!R) return [];
+  const head=["Butir","TK","Kesukaran","DP","DayaPembeda","r","r_sig_p","r_terkoreksi","Keputusan","Catatan"];
+  const rows=[head];
+  R.items.forEach(it=>{
+    rows.push([
+      it.j+1, D(it.tk,3), tkCat(it.tk).t, D(it.dp,3), dpCat(it.dp).t,
+      D(it.r,3), isFinite(it.sig.p)?it.sig.p.toFixed(4):"", D(it.rCorr,3),
+      it.verdict.label, it.verdict.reasons.join("; ")
+    ]);
+  });
+  return rows;
+}
+function toDelim(rows,sep){
+  return rows.map(r=>r.map(c=>{
+    let s=String(c);
+    if(sep===";"||sep===","){ if(/[";\n,]/.test(s)) s='"'+s.replace(/"/g,'""')+'"'; }
+    return s;
+  }).join(sep)).join("\n");
+}
+function download(name,text){
+  const blob=new Blob([text],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+
+/* ============================================================
+   DEMO DATA
+============================================================ */
+// generator acak deterministik (mulberry32) — hasil sama setiap kali dibuka
+function rng32(seed){ let a=seed>>>0; return function(){ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+const NAMES=["Andi","Budi","Cici","Dedi","Euis","Fajar","Gita","Hadi","Intan","Joko",
+             "Kiki","Lina","Maman","Nita","Oki","Putri","Rian","Sari","Tono","Umi",
+             "Vina","Wawan","Yani","Zaki","Bayu"];
+
+function demoPG(){
+  MODE="pg"; setMode();
+  const N=25;
+  const key=["B","C","A","D","C","A","B","D","C","A"];
+  const opts=["A","B","C","D"];
+  // difficulty (logit); butir 9 = miskeyed (diskriminasi negatif), butir 10 = terlalu mudah
+  const b   =[-1.0,-0.5,-0.2, 0.1, 0.4, 0.8, 1.1, 1.4, 0.0,-2.6];
+  const bad9=8, easy10=9;
+  const rand=rng32(20240607);
+  const rows=[];
+  for(let i=0;i<N;i++){
+    const theta = 2.0 - 4.0*(i/(N-1));           // kemampuan turun rapi +2..-2
+    const r=[NAMES[i]];
+    for(let j=0;j<key.length;j++){
+      let eff=theta;
+      if(j===bad9) eff = -theta;                  // butir salah kunci: menguntungkan yg lemah
+      const P = 1/(1+Math.exp(-(eff - b[j])));
+      const correct = rand() < P;
+      if(correct){ r.push(key[j]); }
+      else {
+        // pilih pengecoh; peserta lemah menyebar ke beberapa pengecoh -> pengecoh berfungsi
+        const wrong = opts.filter(o=>o!==key[j]);
+        r.push(wrong[Math.floor(rand()*wrong.length)]);
+      }
+    }
+    rows.push(r.join("\t"));
+  }
+  $("keyIn").value=key.join("\t");
+  $("dataIn").value=rows.join("\n");
+  $("hasName").checked=true;
+  $("errBox").style.display="none";
+}
+
+function demoEssay(){
+  MODE="essay"; setMode();
+  const N=20;
+  const maxS=[10,10,15,15,20];
+  const b   =[-0.3,-0.1, 0.2, 0.0, 0.3];  // "kesukaran" relatif
+  const noiseAmp=[0.10,0.11,0.22,0.12,0.11]; // butir 3 lebih longgar/berisik
+  const rand=rng32(19920815);
+  const rows=[];
+  for(let i=0;i<N;i++){
+    const theta = 1.9 - 3.8*(i/(N-1));
+    const r=[NAMES[i]];
+    for(let j=0;j<maxS.length;j++){
+      const noise=(rand()-0.5)*2*noiseAmp[j];
+      let frac = 0.55 + 0.20*theta - 0.12*b[j] + noise;
+      frac = Math.min(0.98, Math.max(0.05, frac));
+      r.push(Math.round(frac*maxS[j]));
+    }
+    rows.push(r.join("\t"));
+  }
+  $("keyIn").value=maxS.join("\t");
+  $("dataIn").value=rows.join("\n");
+  $("hasName").checked=true;
+  $("errBox").style.display="none";
+}
+
+/* ============================================================
+   UI WIRING
+============================================================ */
+function setMode(){
+  document.querySelectorAll("#modeSeg button").forEach(b=>b.classList.toggle("on", b.dataset.mode===MODE));
+  if(MODE==="pg"){
+    $("keyLabel").innerHTML='Kunci Jawaban <span class="hint">— huruf per butir, mis. <code>B C A D ...</code></span>';
+    $("dataLabel").innerHTML='Data Jawaban Peserta <span class="hint">— jawaban berupa huruf (A/B/C/D/E); kosong = salah</span>';
+    $("keyIn").placeholder="B C A D C ...";
+    $("dataIn").placeholder="Andi\tB\tC\tA\tD\tC ...";
+  } else {
+    $("keyLabel").innerHTML='Skor Maksimum Butir <span class="hint">— angka per butir, mis. <code>10 10 15 15 20</code></span>';
+    $("dataLabel").innerHTML='Skor Peserta per Butir <span class="hint">— nilai angka tiap butir</span>';
+    $("keyIn").placeholder="10 10 15 15 20";
+    $("dataIn").placeholder="Andi\t8\t9\t12\t14\t18 ...";
+  }
+}
+
+document.querySelectorAll("#modeSeg button").forEach(b=>{
+  b.addEventListener("click",()=>{ MODE=b.dataset.mode; setMode(); });
+});
+$("runBtn").addEventListener("click",()=>{
+  const err=$("errBox");
+  try{
+    const P=parseInput();
+    const R=analyze(P);
+    render(R);
+    err.style.display="none";
+  }catch(e){
+    const parts=String(e.message).split("|");
+    let html="<b>"+esc(parts[0])+"</b>";
+    if(parts.length>1){ html+="<ul style='margin:8px 0 0;padding-left:18px'>"+parts.slice(1).map(p=>"<li>"+esc(p)+"</li>").join("")+"</ul>"; }
+    err.innerHTML=html; err.className="banner err"; err.style.display="block";
+    $("results").style.display="none";
+    err.scrollIntoView({behavior:"smooth",block:"center"});
+  }
+});
+$("clearBtn").addEventListener("click",()=>{
+  $("keyIn").value=""; $("dataIn").value=""; $("errBox").style.display="none"; $("results").style.display="none";
+});
+$("demoPG").addEventListener("click",demoPG);
+$("demoEssay").addEventListener("click",demoEssay);
+
+$("csvBtn").addEventListener("click",()=>{
+  if(!RES) return;
+  download("rekap-butir.csv", toDelim(rekapMatrix(),";"));
+});
+$("copyBtn").addEventListener("click",()=>{
+  if(!RES) return;
+  const tsv=toDelim(rekapMatrix(),"\t");
+  navigator.clipboard?.writeText(tsv).then(()=>{
+    const b=$("copyBtn"); const t=b.textContent; b.textContent="Tersalin ✓";
+    setTimeout(()=>b.textContent=t,1400);
+  }).catch(()=>alert("Gagal menyalin. Coba unduh CSV."));
+});
+$("printBtn").addEventListener("click",()=>window.print());
+
+// scroll-spy for rail
+const secIds=["sec-input","sec-ringkasan","sec-skor","sec-rel","sec-tk","sec-dp","sec-kor","sec-peng","sec-rekap"];
+const navMap={};
+document.querySelectorAll("nav.rail a").forEach(a=>{ navMap[a.getAttribute("href").slice(1)]=a; });
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      document.querySelectorAll("nav.rail a").forEach(a=>a.classList.remove("active"));
+      const a=navMap[en.target.id]; if(a) a.classList.add("active");
+    }
+  });
+},{rootMargin:"-20% 0px -70% 0px",threshold:0});
+secIds.forEach(id=>{ const el=$(id); if(el) io.observe(el); });
+
+// init
+setMode();
+</script>
+</body>
+</html>

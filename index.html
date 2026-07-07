@@ -484,6 +484,28 @@ function parseInput(){
   }
   if(responses.length<3) throw new Error("Peserta terlalu sedikit (terbaca "+responses.length+"). Minimal 3 peserta untuk analisis yang bermakna.");
 
+  // === Validasi rentang skor (khusus Uraian): 0 ≤ skor ≤ maksimum butir.
+  //     Kumpulkan SEMUA sel bermasalah lalu laporkan sekaligus (pola sama seperti rowErrors).
+  //     Blok ini hanya membaca & memvalidasi input; tidak mengubah perhitungan apa pun. ===
+  if(MODE!=="pg"){
+    const scoreErrors=[];
+    for(let s=0;s<responses.length;s++){
+      for(let j=0;j<K;j++){
+        const cell=responses[s][j].trim();
+        if(cell==="") continue;   // sel kosong = 0 (tidak dikerjakan); hapus baris ini bila kosong ingin dianggap error
+        const v=parseFloat(cell.replace(",","."));
+        if(!isFinite(v)){
+          scoreErrors.push("Butir "+(j+1)+" peserta "+(s+1)+" (\""+names[s]+"\"): \""+cell+"\" bukan angka.");
+        } else if(v<0 || v>maxScore[j]){
+          scoreErrors.push("Butir "+(j+1)+" peserta "+(s+1)+" (\""+names[s]+"\"): "+v+" di luar rentang 0–"+maxScore[j]+".");
+        }
+      }
+    }
+    if(scoreErrors.length){
+      throw new Error("Skor di luar rentang yang sah:|"+scoreErrors.slice(0,8).join("|")+(scoreErrors.length>8?"|…dan "+(scoreErrors.length-8)+" sel lain.":""));
+    }
+  }
+
   return {K, key, maxScore, names, responses, N:responses.length};
 }
 
